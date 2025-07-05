@@ -16,7 +16,8 @@ def download_media(
     download_audio=True,
     browser_cookies=None,
     cookie_file=None,
-    force_overwrites=False
+    force_overwrites=False,
+    audio_volume_multiplier=1.0
 ):
     """
     使用 yt-dlp 从给定的 URL 下载媒体文件。
@@ -28,6 +29,7 @@ def download_media(
     :param browser_cookies: 从哪个浏览器加载 cookies (例如, 'chrome', 'firefox').
     :param cookie_file: Cookie 文件的路径。
     :param force_overwrites: 是否强制覆盖已存在的文件。
+    :param audio_volume_multiplier: 音频音量乘数 (例如 1.5 代表音量增加50%)。
     """
     base_ydl_opts = {
         'quiet': True,
@@ -84,6 +86,10 @@ def download_media(
             }],
         })
         
+        # 如果指定了音量调节，添加 ffmpeg 参数
+        if audio_volume_multiplier and audio_volume_multiplier != 1.0:
+            audio_opts['postprocessor_args'] = ['-af', f'volume={audio_volume_multiplier}']
+
         try:
             print(f"开始从 {url} 提取音频...")
             with yt_dlp.YoutubeDL(audio_opts) as ydl:

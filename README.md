@@ -125,6 +125,7 @@ conda install -c conda-forge yt-dlp ffmpeg -y
 #### [新] 仅批量下载音频 (简化版)
 
 如果您只关心音频，可以使用 `batch_audio_only.py` 脚本，它的用法更简单。
+**此脚本会自动将下载的音频音量增加50%。**
 
 - **批量下载音频 (默认跳过已存在文件):**
   ```bash
