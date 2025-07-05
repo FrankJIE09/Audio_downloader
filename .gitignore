@@ -29,3 +29,5 @@ __pycache__/
 *.sublime-*
 downloads/*
 downloads/
+*.mp3
+music/

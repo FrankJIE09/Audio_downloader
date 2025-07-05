@@ -75,7 +75,7 @@ def batch_download_audio_only(
                 download_audio=True,
                 cookie_file=cookie_file,
                 force_overwrites=force_overwrites,
-                audio_volume_multiplier=1.5 # 音量增加50%
+                audio_volume_multiplier=3 # 音量增加50%
             )
         except Exception as e:
             print(f"处理 URL {url} 时发生未知严重错误: {e}")
