@@ -37,7 +37,7 @@ for /f "tokens=* delims=" %%i in (网易云_id.txt) do (
     cd music
     
     :: 下载歌单（使用默认格式，yun工具会自动创建歌单文件夹）
-    yun --cookie ..\yun.cookie.txt -c 5 -q 320 --cover %%i
+    yun --cookie ..\yun.cookie.txt -c 5 -q 320 --cover --skip-trial %%i
     
     :: 返回上级目录
     cd ..
