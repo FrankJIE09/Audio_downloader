@@ -1,6 +1,7 @@
 import argparse
 import os
 import sys
+from typing import Iterable, List
 
 try:
     import yt_dlp
@@ -109,12 +110,62 @@ def progress_hook(d):
         print(f"处理 {d.get('filename', '未知文件')} 时出错")
 
 
+def read_links_file(path: str) -> List[str]:
+    urls: List[str] = []
+    with open(path, "r", encoding="utf-8") as f:
+        for raw_line in f:
+            line = raw_line.strip()
+            if not line or line.startswith("#"):
+                continue
+            urls.append(line)
+    return urls
+
+
+def iter_inputs_as_urls(inputs: Iterable[str]) -> List[str]:
+    urls: List[str] = []
+    for item in inputs:
+        item = item.strip()
+        if not item:
+            continue
+
+        # 优先把 http(s) 开头的当作 URL（避免与本地同名文件冲突）
+        if item.startswith(("http://", "https://")):
+            urls.append(item)
+            continue
+
+        # 其次：如果是文件，则按 links.txt 形式读取
+        if os.path.isfile(item):
+            urls.extend(read_links_file(item))
+            continue
+
+        # 否则按 URL/平台短链等原样处理（例如 bilibili/抖音可能不是 http 开头）
+        urls.append(item)
+
+    # 去重但保持顺序
+    seen = set()
+    deduped: List[str] = []
+    for u in urls:
+        if u in seen:
+            continue
+        seen.add(u)
+        deduped.append(u)
+    return deduped
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="从 YouTube, Bilibili, Douyin 等网站下载视频和/或音频。",
-        epilog="示例: python main.py <URL> --no-video  (只下载音频)"
+        epilog=(
+            "示例:\n"
+            "  python main.py <URL> --no-video            (只下载音频)\n"
+            "  python main.py links.txt --no-video        (从 links.txt 批量下载音频)\n"
+            "  python main.py url1 url2 links.txt         (混合多个链接/文件)\n"
+            "\n"
+            "说明: 传入的本地文件会按 links.txt 规则读取（每行一个链接，支持 # 注释）。"
+        ),
+        formatter_class=argparse.RawTextHelpFormatter,
     )
-    parser.add_argument("url", help="视频的 URL")
+    parser.add_argument("inputs", nargs="+", help="单个链接，或 links.txt 路径（可传多个）")
     parser.add_argument("-o", "--output", default="downloads", help="输出文件的根目录 (默认为 'downloads')")
     parser.add_argument("--no-video", action="store_true", help="不下载视频文件")
     parser.add_argument("--no-audio", action="store_true", help="不提取音频文件")
@@ -143,12 +194,18 @@ if __name__ == '__main__':
         print("错误: 您必须选择下载视频或音频中的至少一项。")
         sys.exit(1)
 
-    download_media(
-        args.url,
-        args.output,
-        should_download_video,
-        should_download_audio,
-        args.cookies_from_browser,
-        args.cookies,
-        args.force_overwrites
-    )
+    urls = iter_inputs_as_urls(args.inputs)
+    if not urls:
+        print("错误: 未解析到任何可下载的链接。")
+        sys.exit(1)
+
+    for url in urls:
+        download_media(
+            url,
+            args.output,
+            should_download_video,
+            should_download_audio,
+            args.cookies_from_browser,
+            args.cookies,
+            args.force_overwrites,
+        )

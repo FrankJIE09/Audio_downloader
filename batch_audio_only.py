@@ -13,6 +13,14 @@ except ImportError:
     print("错误：yt-dlp 未安装。请在 conda 环境中运行 'conda install -c conda-forge yt-dlp' 来安装。")
     sys.exit(1)
 
+# 在 Windows 的默认 GBK 控制台下，某些 Unicode 字符（例如 ✓/✗）会触发编码异常并导致脚本中断。
+# 这里尽量把标准输出切到 UTF-8；若环境不支持则忽略，后续打印也避免使用特殊符号。
+try:
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
+
 
 # 创建线程锁用于线程安全的打印
 print_lock = threading.Lock()
@@ -142,18 +150,18 @@ def batch_download_audio_only(
                     
                     if status == "成功":
                         completed += 1
-                        safe_print(f"✓ [{completed + skipped + failed}/{len(urls)}] 下载成功 ({elapsed_time:.1f}s): {url}")
+                        safe_print(f"[OK] [{completed + skipped + failed}/{len(urls)}] 下载成功 ({elapsed_time:.1f}s): {url}")
                     elif status == "已存在":
                         skipped += 1
                         safe_print(f"- [{completed + skipped + failed}/{len(urls)}] 文件已存在，跳过: {extra_info}")
                     else:  # 错误
                         failed += 1
-                        safe_print(f"✗ [{completed + skipped + failed}/{len(urls)}] 下载失败 ({elapsed_time:.1f}s): {url}")
+                        safe_print(f"[FAIL] [{completed + skipped + failed}/{len(urls)}] 下载失败 ({elapsed_time:.1f}s): {url}")
                         safe_print(f"  错误信息: {extra_info}")
                         
                 except Exception as e:
                     failed += 1
-                    safe_print(f"✗ [{completed + skipped + failed}/{len(urls)}] 处理失败: {url}")
+                    safe_print(f"[FAIL] [{completed + skipped + failed}/{len(urls)}] 处理失败: {url}")
                     safe_print(f"  错误信息: {e}")
 
         except KeyboardInterrupt:
