@@ -10,6 +10,23 @@ except ImportError:
     sys.exit(1)
 
 
+def extra_ydl_opts_for_url(url: str) -> dict:
+    """
+    B 站对页面/API 会校验 Referer，缺省时易出现 HTTP 412 (JSON metadata / webpage)。
+    与 yt-dlp 侧 workaround 一致：为 *.bilibili.com / b23.tv 附加站内引用头。
+    若仍 412，请升级 yt-dlp 并配合 --cookies 或 --cookies-from-browser（浏览器先打开过 bilibili 即可，未必登录）。
+    """
+    u = url.lower()
+    if "bilibili.com" in u or "b23.tv" in u:
+        return {
+            "http_headers": {
+                "Referer": "https://www.bilibili.com/",
+                "Origin": "https://www.bilibili.com",
+            }
+        }
+    return {}
+
+
 def download_media(
     url,
     output_dir='downloads',
@@ -39,6 +56,10 @@ def download_media(
         # --ignore-errors: 继续处理播放列表中的其他视频，即使某个视频下载失败
         'ignoreerrors': True,
     }
+    bili = extra_ydl_opts_for_url(url)
+    if bili:
+        # 若日后 base 也带 http_headers，此处需合并子 dict
+        base_ydl_opts.update(bili)
 
     if cookie_file:
         base_ydl_opts['cookiefile'] = cookie_file

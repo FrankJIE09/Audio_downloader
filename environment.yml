@@ -1,0 +1,9 @@
+# conda: conda env create -f environment.yml
+# 激活: conda activate Audio_downloader
+name: Audio_downloader
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10,<3.13
+  - yt-dlp
+  - ffmpeg

@@ -5,7 +5,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from main import download_media
+from main import download_media, extra_ydl_opts_for_url
 
 try:
     import yt_dlp
@@ -54,7 +54,7 @@ def download_single_url(url, output_dir, cookie_file=None, force_overwrites=Fals
             }
             if cookie_file:
                 check_opts['cookiefile'] = cookie_file
-            
+            check_opts.update(extra_ydl_opts_for_url(url))
             try:
                 with yt_dlp.YoutubeDL(check_opts) as ydl:
                     info = ydl.extract_info(url, download=False)
