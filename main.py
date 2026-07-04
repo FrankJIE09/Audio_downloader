@@ -1,13 +1,22 @@
 import argparse
 import os
+import shutil
 import sys
-from typing import Iterable, List
+from typing import Dict, Iterable, List
 
 try:
     import yt_dlp
 except ImportError:
     print("错误：yt-dlp 未安装。请在 conda 环境中运行 'conda install -c conda-forge yt-dlp' 来安装。")
     sys.exit(1)
+
+
+def preferred_js_runtimes() -> Dict[str, dict]:
+    """为 YouTube EJS 等选第一个在 PATH 中可用的 JS 运行时（优先级 node > deno > bun）。"""
+    for name in ('node', 'deno', 'bun'):
+        if shutil.which(name):
+            return {name: {}}
+    return {}
 
 
 def extra_ydl_opts_for_url(url: str) -> dict:
@@ -56,6 +65,9 @@ def download_media(
         # --ignore-errors: 继续处理播放列表中的其他视频，即使某个视频下载失败
         'ignoreerrors': True,
     }
+    js_rt = preferred_js_runtimes()
+    if js_rt:
+        base_ydl_opts['js_runtimes'] = js_rt
     bili = extra_ydl_opts_for_url(url)
     if bili:
         # 若日后 base 也带 http_headers，此处需合并子 dict

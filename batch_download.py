@@ -1,7 +1,7 @@
 import argparse
 import os
 import sys
-from main import download_media
+from main import download_media, preferred_js_runtimes
 
 try:
     import yt_dlp
@@ -52,6 +52,9 @@ def batch_download(
                 'ignoreerrors': True,
                 'extract_flat': 'in_playlist', # 快速获取播放列表信息而不深入
             }
+            js_rt = preferred_js_runtimes()
+            if js_rt:
+                check_opts['js_runtimes'] = js_rt
             if cookie_file:
                 check_opts['cookiefile'] = cookie_file
             elif browser_cookies:

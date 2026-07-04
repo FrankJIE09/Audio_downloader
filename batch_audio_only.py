@@ -5,7 +5,7 @@ import threading
 import time
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from main import download_media, extra_ydl_opts_for_url
+from main import download_media, extra_ydl_opts_for_url, preferred_js_runtimes
 
 try:
     import yt_dlp
@@ -52,6 +52,9 @@ def download_single_url(url, output_dir, cookie_file=None, force_overwrites=Fals
                 'ignoreerrors': True,
                 'extract_flat': 'in_playlist',
             }
+            js_rt = preferred_js_runtimes()
+            if js_rt:
+                check_opts['js_runtimes'] = js_rt
             if cookie_file:
                 check_opts['cookiefile'] = cookie_file
             check_opts.update(extra_ydl_opts_for_url(url))
